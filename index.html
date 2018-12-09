@@ -1,0 +1,67 @@
+<!DOCYTYPE html>
+<html lang="ja">
+    <head>
+        <!--nothing head-->
+    </head>
+    <body>
+        <!--body-->
+        <form name="fm">
+            <!--メッセージ入力部分-->
+            <label>メッセージ：<input type="text" name="message" size="30"></label>
+            <!--メッセージ送信ボタン-->
+            <input type="button" id="btnsend" name="submit" value="送信" onclick="InsertMessage(),Clear(document.fm.message)">        
+        </form>
+        <div id="result" style="width:40%"></div>
+    </body>
+    <script>
+        // 要素を追加する関数
+        function InsertMessage(){
+            // Elementの定義
+            var targetResultElement = document.getElementById("result");
+            var userMessageElement = document.createElement('div');
+            var responceMessageElement = document.createElement('div');
+            responceMessageElement.style.textAlign = 'right'; // 右側に表示
+            responceMessageElement.textContent = 'wait・・・';
+
+            // テキストの表示
+            userMessageElement.textContent = 'user : ' + fm.message.value;
+            
+            // 非同期でレスポンスを追加
+            AsyncAddResponce(fm.message,responceMessageElement);
+
+            // 結果エレメントに追加
+            targetResultElement.appendChild(userMessageElement);
+            targetResultElement.appendChild(responceMessageElement);
+        }
+
+        // APIにリクエストを送信してレスポンスをメッセージとして追加する関数
+        var AsyncAddResponce = function(messageElement,responceElement){
+            var req = new XMLHttpRequest();
+            req.onreadystatechange = function(){
+                // 通信完了時
+                if(req.readyState == 4){
+                    // 通信成功時
+                    if(req.status == 200){
+                        // jsonのデシリアライズ
+                        var jsonData = JSON.parse(req.responseText);
+                        responceElement.textContent = 'AI : '+ jsonData.results[0].reply;
+                    }
+                    else{
+                    }
+                }
+                else{
+                }
+            }
+
+            // 通信処理
+            req.open('POST', 'https://api.a3rt.recruit-tech.co.jp/talk/v1/smalltalk');
+            req.setRequestHeader('content-type','application/x-www-form-urlencoded;charset=UTF-8');
+            req.send('apikey=&query=' + messageElement.value);
+        }
+
+        // 指定したElementの値をクリア
+        var Clear = function(targetElement){
+            targetElement.value = "";
+        }
+    </script>
+</html>
